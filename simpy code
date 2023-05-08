@@ -1,0 +1,73 @@
+pip install simpy
+
+print("\t\t\t\t\t\t\t\t\t____________________________\n")
+print("\t\t\t\t\t\t\t\t\t  WELCOME TO TICKET BOOTH")
+print("\t\t\t\t\t\t\t\t\t____________________________\n\n\n")
+print("Today's show and their timings are:\n")
+print("1. AVENGERS 4:15PM , AUDI 4\n")
+print("2. SPIDERMAN 5:30PM , AUDI 1\n")
+print("3. JOKER 6:00PM , AUDI 3\n\n")
+print("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n")
+ans=input("Do you want to move towards ticket counter?\n-> Yes                       -> No\n\n")
+print("\n---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n\n")
+if(ans=="Yes" or ans=="yes" or ans=="YES"):
+ print("                                                                        ........................")
+ print("                                                                              MOVIES LIST") 
+ print("                                                                        ........................\n")
+ print("@ AVENGERS  249 INR                                                         @ SPIDERMAN 200 INR                                                        @ JOKER 215 INR\n")
+ print("\n---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n")
+ import simpy
+ import random
+ import queue
+ num_counters = 1
+ movie_tickets = {
+    "AVENGERS": 249.00,
+    "SPIDERMAN": 200.00,
+    "JOKER": 215.00
+ }
+ num_customers = 50
+ min_arrival_time = 0
+ max_arrival_time = 60
+ ticket_queue = queue.Queue()
+ def generate_customer():
+    ticket = random.choice(list(movie_tickets.keys()))
+    quantity = random.randint(1, 5)
+    arrival_time = random.randint(min_arrival_time, max_arrival_time)
+    return {"Movie": ticket, "Quantity": quantity, "Arrival Time": arrival_time}
+ def ticket_counter_simulation():
+    customers = []
+    for i in range(1, num_customers + 1):
+        customer = generate_customer()
+        customer["id"] = i
+        customers.append(customer)
+    total_sales = 0
+    current_time = 0
+    while len(customers) > 0 or not ticket_queue.empty():
+        if len(customers) > 0 and current_time >= customers[0]["Arrival Time"]:
+            customer = customers.pop(0)
+            ticket_queue.put(customer)
+            print(f"New customer arrived   {customer}\n")
+        for i in range(num_counters):
+            if not ticket_queue.empty():
+                customer = ticket_queue.get()
+                sale = movie_tickets[customer["Movie"]] * customer["Quantity"]
+                total_sales += sale
+                print(f"Customer {customer['id']} | Bought {customer['Quantity']} {customer['Movie']} tickets for {sale:.2f} Rs at time {current_time} :)\n")
+        yield env.timeout(0)
+        current_time += 1
+    print("\n---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n")
+    print("***************************************")
+    print("   TICKET WINDOW SALES INSIGHTS")
+    print("***************************************\n")
+    print(f"-> No. of ticket counters :- {num_counters}")
+    print(f"-> No. of customers :- {num_customers}")
+    print(f"-> Total sales :- {total_sales:.2f} INR")
+    print(f"-> Avg. sales per customer :- {total_sales/num_customers:.2f} INR")
+ env = simpy.Environment()
+ env.process(ticket_counter_simulation())
+ env.run(until=10)
+ print("\n---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n")
+ print("\t\t\t\t\t\t\t\t\tThankyou for visiting, See you again!\n\n")
+else:
+  print("\t\t\t\t\t\t\t\t\tThankyou for visiting, See you again!\n\n")
+
